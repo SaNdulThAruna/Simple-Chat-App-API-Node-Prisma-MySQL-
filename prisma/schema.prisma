@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model chat {
+  id                           Int         @id @default(autoincrement())
+  from_user_id                 Int
+  to_user_id                   Int
+  message                      String      @db.Text
+  date_time                    DateTime    @db.DateTime(0)
+  chat_status_id               Int
+  chat_status                  chat_status @relation(fields: [chat_status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_chat_chat_status1")
+  user_chat_from_user_idTouser user        @relation("chat_from_user_idTouser", fields: [from_user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_chat_user1")
+  user_chat_to_user_idTouser   user        @relation("chat_to_user_idTouser", fields: [to_user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_chat_user2")
+
+  @@index([chat_status_id], map: "fk_chat_chat_status1_idx")
+  @@index([from_user_id], map: "fk_chat_user1_idx")
+  @@index([to_user_id], map: "fk_chat_user2_idx")
+}
+
+model chat_status {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(20)
+  chat chat[]
+}
+
+model user {
+  id                           Int         @id @default(autoincrement())
+  mobile                       String      @db.VarChar(10)
+  first_name                   String      @db.VarChar(45)
+  last_name                    String      @db.VarChar(45)
+  password                     String      @db.VarChar(20)
+  registered_date_time         DateTime    @db.DateTime(0)
+  user_status_id               Int
+  chat_chat_from_user_idTouser chat[]      @relation("chat_from_user_idTouser")
+  chat_chat_to_user_idTouser   chat[]      @relation("chat_to_user_idTouser")
+  user_status                  user_status @relation(fields: [user_status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_user_status1")
+
+  @@index([user_status_id], map: "fk_user_user_status1_idx")
+}
+
+model user_status {
+  id   Int     @id @default(autoincrement())
+  name String? @db.VarChar(20)
+  user user[]
+}
